@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace CSharpBasicSyntax
+﻿namespace CSharpBasicSyntax
 {
     internal class TextRPG
     {
@@ -116,6 +114,7 @@ namespace CSharpBasicSyntax
                 if(monster.hp <= 0)
                 {
                     Console.WriteLine("승리했습니다.");
+                    Console.WriteLine($"남은 체력: {player.hp}");
                     break;
                 }
 
@@ -175,24 +174,24 @@ namespace CSharpBasicSyntax
             }
         }
 
-        static void Main(string[] args)
-        {
-            ClassType choice = ClassType.None;
+        //static void Main(string[] args)
+        //{
+        //    ClassType choice = ClassType.None;
 
-            while(true)
-            {
-                choice = ChooseClass();
+        //    while(true)
+        //    {
+        //        choice = ChooseClass();
 
-                if (choice != ClassType.None)
-                {
-                    //캐릭터 생성 기사(100/10) 궁수(75/12) 법사(50/15)
-                    Player player;
-                    CreatePlayer(choice, out player);
+        //        if (choice != ClassType.None)
+        //        {
+        //            //캐릭터 생성 기사(100/10) 궁수(75/12) 법사(50/15)
+        //            Player player;
+        //            CreatePlayer(choice, out player);
 
-                    EnterGame(ref player);
-                }
-            }
+        //            EnterGame(ref player);
+        //        }
+        //    }
 
-        }
+        //}
     }
 }
