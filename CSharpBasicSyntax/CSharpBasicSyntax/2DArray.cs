@@ -29,21 +29,21 @@
             }
         }
 
-        static void Main(string[] args)
-        {
-            int[,] arr = new int[2, 3] {
-                { 1, 2, 3 },
-                { 1, 2, 3 }
-            };
-            arr[0, 0] = 1;
-            arr[1, 0] = 1;
+        //static void Main(string[] args)
+        //{
+        //    int[,] arr = new int[2, 3] {
+        //        { 1, 2, 3 },
+        //        { 1, 2, 3 }
+        //    };
+        //    arr[0, 0] = 1;
+        //    arr[1, 0] = 1;
 
-            Map map = new Map();
-            map.Render();
+        //    Map map = new Map();
+        //    map.Render();
 
-            // [. . .]
-            // [. . .]
+        //    // [. . .]
+        //    // [. . .]
 
-        }
+        //}
     }
 }
