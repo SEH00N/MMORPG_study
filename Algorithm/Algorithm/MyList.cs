@@ -2,8 +2,8 @@
 {
     public class MyList<T>
     {
-        const int DEFAULT_SIZE = 1;
-        private T[] data = new T[DEFAULT_SIZE];
+        const int DEFAULT_Size = 1;
+        private T[] data = new T[DEFAULT_Size];
 
         public int Count = 0;
         public int Capacity => data.Length;
