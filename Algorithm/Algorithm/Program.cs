@@ -27,9 +27,7 @@
                 lastTick = currentTick;
                 #endregion
 
-
                 // 입력
-
 
                 // 로직
                 player.Update(deltaTick);
