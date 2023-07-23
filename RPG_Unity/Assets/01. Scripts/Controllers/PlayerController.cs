@@ -4,16 +4,16 @@ public class PlayerController : MonoBehaviour
 {   
     [SerializeField] float speed = 10f;
 
+    private PlayerState state = PlayerState.Idle;
     private Vector3 destPos;
 
     private void Start()
     {
         Managers.Input.KeyAction += OnKeyboard;
         Managers.Input.MouseAction += OnMouseClicked;
-    }
 
-    private float wait_run_ratio = 0f;
-    private PlayerState state = PlayerState.Idle;
+        Managers.UI.ShowSceneUI<UI_Inventory>();
+    }
 
     public enum PlayerState
     {
