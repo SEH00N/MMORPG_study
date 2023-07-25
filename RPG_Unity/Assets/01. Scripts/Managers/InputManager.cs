@@ -9,8 +9,15 @@ public class InputManager
 
     private bool pressed = false;
 
+    public void Clear()
+    {
+        KeyAction = null;
+        MouseAction = null;
+    }
+
     public void OnUpdate()
     {
+        // if(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
         if(EventSystem.current.IsPointerOverGameObject())
             return;
 

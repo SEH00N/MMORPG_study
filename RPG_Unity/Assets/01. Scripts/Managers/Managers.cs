@@ -7,10 +7,14 @@ public class Managers : MonoBehaviour
 
     private InputManager input = new InputManager();
     private ResourceManager resource = new ResourceManager();
+    private SceneManagerEx scene = new SceneManagerEx();
+    private SoundManager sound = new SoundManager();
     private UIManager ui = new UIManager();
 
     public static InputManager Input => Instance.input;
     public static ResourceManager Resource => Instance.resource;
+    public static SceneManagerEx Scene => Instance.scene;
+    public static SoundManager Sound => Instance.sound;
     public static UIManager UI => Instance.ui;
 
     private void Start()
@@ -36,6 +40,16 @@ public class Managers : MonoBehaviour
 
             DontDestroyOnLoad(go);
             instance = go.GetComponent<Managers>();
+
+            instance.sound.Init();
         }
+    }
+
+    public static void Clear()
+    {
+        Input.Clear();
+        Sound.Clear();
+        Scene.Clear();
+        UI.Clear();
     }
 }
