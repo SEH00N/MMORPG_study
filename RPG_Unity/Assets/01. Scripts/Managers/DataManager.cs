@@ -3,13 +3,13 @@ using UnityEngine;
 
 public class DataManager
 {
-    private Dictionary<int, Stat> stats = new Dictionary<int, Stat>();
-    public Dictionary<int, Stat> Stats => stats;
-    private StatData data;
+    private Dictionary<int, Data.Stat> stats = new Dictionary<int, Data.Stat>();
+    public Dictionary<int, Data.Stat> Stats => stats;
+    private Data.StatData data;
 
     public void Init()
     {
-        stats = LoadJson<StatData, int, Stat>("StatData").MakeDictionary();
+        stats = LoadJson<Data.StatData, int, Data.Stat>("StatData").MakeDictionary();
     }
 
     private Loader LoadJson<Loader, Key, Value>(string path) where Loader : ILoader<Key, Value>

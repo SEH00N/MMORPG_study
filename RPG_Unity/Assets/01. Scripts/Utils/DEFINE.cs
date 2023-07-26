@@ -1,7 +1,15 @@
+using System.Reflection;
 using UnityEngine;
 
 public class DEFINE
 {
+    public enum Layer
+    {
+        Monster = 1 << 6,
+        Ground = 1 << 7,
+        Block = 1 << 8,
+    }
+
     public enum Scene
     {
         Unknown,
@@ -26,6 +34,8 @@ public class DEFINE
     public enum MouseEvent
     {
         Press,
+        PointerDown,
+        PointerUp,
         Click
     }
 
