@@ -1,121 +1,63 @@
-using System.Linq.Expressions;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : BaseController
 {   
-    [SerializeField] PlayerState state = PlayerState.Idle;
-    public PlayerState State {
-        get => state;
-        set {
-            state = value;
+    private int mask = (int)DEFINE.Layer.Ground | (int)DEFINE.Layer.Monster;
+    private bool stopSkill = false;
 
-            Animator anim = GetComponent<Animator>();
-            switch(state)
-            {
-                case PlayerState.Die:
-                    break;
-                case PlayerState.Idle:
-                    anim.CrossFade("WAIT", 0.1f);
-                    break;
-                case PlayerState.Moving:
-                    anim.CrossFade("RUN", 0.1f);
-                    break;
-                case PlayerState.Skill:
-                    anim.CrossFade("ATTACK", 0.1f, -1, 0);
-                    break;
-            }
-        }
-    }
-    
-    private Vector3 destPos;
     private PlayerStat stat;
 
-    private int mask = (int)DEFINE.Layer.Ground | (int)DEFINE.Layer.Monster;
-    private GameObject lockTarget;
-
-    private void Start()
+    public override void Init()
     {
+        WorldObjectType = DEFINE.WorldObject.Player;
         stat = GetComponent<PlayerStat>();
 
-        Managers.Input.KeyAction += OnKeyboard;
         Managers.Input.MouseAction += OnMouseEvent;
 
         // Managers.UI.ShowSceneUI<UI_Inventory>();
-        Managers.UI.MakeWorldSpaceUI<UI_HPBar>(transform);
+        if(GetComponentInChildren<UI_HPBar>() == null)
+            Managers.UI.MakeWorldSpaceUI<UI_HPBar>(transform);
     }
 
-    private void Update()
-    {
-        switch(State)
-        {
-            case PlayerState.Die:
-                UpdateDie();
-                break;
-            case PlayerState.Moving:
-                UpdateMoving();
-                break;
-            case PlayerState.Idle:
-                UpdateIdle();
-                break;
-            case PlayerState.Skill:
-                UpdateSkill();
-                break;
-        }
-    }
-
-    private void UpdateDie()
-    {
-    }
-
-    private void UpdateIdle()
-    {
-    }
-
-    private void UpdateMoving()
+    protected override void UpdateMoving()
     {
         if(lockTarget != null)
         {
             float distance = (destPos - transform.position).magnitude;
             if(distance <= 1)
             {
-                State = PlayerState.Skill;
+                State = DEFINE.State.Skill;
                 return;
             }
         }
 
         Vector3 dir = destPos - transform.position;
+        dir.y = 0;
 
         if (dir.magnitude < 0.1f)
         {
-            State = PlayerState.Idle;
+            State = DEFINE.State.Idle;
             return;
         }
         else
         {
-            NavMeshAgent nav = GetComponent<NavMeshAgent>();
-
-            float moveDist = Mathf.Clamp(stat.MoveSpeed * Time.deltaTime, 0f, dir.magnitude);
-            // nav.SetDestination(destPos);
-            nav.Move(dir.normalized * moveDist);
-
             Debug.DrawRay(transform.position + Vector3.up * 0.5f, dir.normalized, Color.red);
             if(Physics.Raycast(transform.position + Vector3.up * 0.5f, dir, 1.0f, LayerMask.GetMask("Block")))
             {
                 if(Input.GetMouseButton(0) == false)
-                    State = PlayerState.Idle;
+                    State = DEFINE.State.Idle;
                 return;
             }
-
+            
+            float moveDist = Mathf.Clamp(stat.MoveSpeed * Time.deltaTime, 0f, dir.magnitude);
+            transform.position += dir.normalized * moveDist;
             // transform.position += dir.normalized * moveDist;
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
         }
-
-        Animator anim = GetComponent<Animator>();
-        anim.SetFloat("speed", stat.MoveSpeed);
     }
 
-    private void UpdateSkill()
+    protected override void UpdateSkill()
     {
         if(lockTarget != null)
         {
@@ -130,39 +72,35 @@ public class PlayerController : MonoBehaviour
         if(lockTarget != null)
         {
             Stat targetStat = lockTarget.GetComponent<Stat>();
-            int damage = Mathf.Max(0, stat.Attack - targetStat.Defense);
-
-            targetStat.HP -= damage;
+            targetStat.OnAttacked(stat);
         }
 
         if(stopSkill)
         {
-            State = PlayerState.Idle;
+            State = DEFINE.State.Idle;
         }
         else
         {
-            State = PlayerState.Skill;
+            State = DEFINE.State.Skill;
 
         }
 
     }
-
-    private bool stopSkill = false;
-
+    
     private void OnMouseEvent(DEFINE.MouseEvent evt)
     {
-        if(State == PlayerState.Die)
+        if(State == DEFINE.State.Die)
             return;
 
         switch(State)
         {
-            case PlayerState.Idle:
+            case DEFINE.State.Idle:
                 OnMouseEvent_IdleRun(evt);
                 break;
-            case PlayerState.Moving:
+            case DEFINE.State.Moving:
                 OnMouseEvent_IdleRun(evt);
                 break;
-            case PlayerState.Skill:
+            case DEFINE.State.Skill:
                 if(evt == DEFINE.MouseEvent.PointerUp)
                 {
                     stopSkill = true;
@@ -184,7 +122,7 @@ public class PlayerController : MonoBehaviour
                 if(isHit)
                 {
                     destPos = hit.point;
-                    State = PlayerState.Moving;
+                    State = DEFINE.State.Moving;
                     stopSkill = false;
 
                     if (1 << hit.collider.gameObject.layer == (int)DEFINE.Layer.Monster)
@@ -202,56 +140,55 @@ public class PlayerController : MonoBehaviour
                 break;
         }
     }
-
-    private void OnKeyboard()
-    {
-        // Local -> World
-        // TransformDirection
-
-        // World -> Local
-        // InverseTransformDirection
-        
-        // transform.rotation
-        // transform.eulerAngles
-        // transform.Rotate()
-
-        if(Input.GetKey(KeyCode.W))
-        {
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.forward), Time.deltaTime * 10f);
-            transform.Translate(Vector3.forward * Time.deltaTime * stat.MoveSpeed, Space.World);
-            // transform.Translate(Vector3.forward * Time.deltaTime * speed);
-            // transform.position += transform.TransformDirection(Vector3.forward) * Time.deltaTime * speed;
-        }
-        if(Input.GetKey(KeyCode.S))
-        {
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.back), Time.deltaTime * 10f);
-            transform.Translate(Vector3.back * Time.deltaTime * stat.MoveSpeed, Space.World);
-            // transform.Translate(Vector3.back * Time.deltaTime * speed);
-            // transform.position += transform.TransformDirection(Vector3.back) * Time.deltaTime * speed;
-        }
-        if(Input.GetKey(KeyCode.A))
-        {
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.left), Time.deltaTime * 10f);
-            transform.Translate(Vector3.left * Time.deltaTime * stat.MoveSpeed, Space.World);
-            // transform.Translate(Vector3.left * Time.deltaTime * speed);
-            // transform.position += transform.TransformDirection(Vector3.left) * Time.deltaTime * speed;
-        }
-        if(Input.GetKey(KeyCode.D))
-        {
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.right), Time.deltaTime * 10f);
-            transform.Translate(Vector3.right * Time.deltaTime * stat.MoveSpeed, Space.World);
-            // transform.Translate(Vector3.right * Time.deltaTime * speed);
-            // transform.position += transform.TransformDirection(Vector3.right) * Time.deltaTime * speed;
-        }
-
-        // state = PlayerState.Idle;
-    }
-
-    public enum PlayerState
-    {
-        Die,
-        Moving,
-        Idle,
-        Skill
-    }
 }
+
+
+
+
+
+
+
+
+//     private void OnKeyboard()
+//     {
+//         // Local -> World
+//         // TransformDirection
+
+//         // World -> Local
+//         // InverseTransformDirection
+
+//         // transform.rotation
+//         // transform.eulerAngles
+//         // transform.Rotate()
+
+//         if(Input.GetKey(KeyCode.W))
+//         {
+//             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.forward), Time.deltaTime * 10f);
+//             transform.Translate(Vector3.forward * Time.deltaTime * stat.MoveSpeed, Space.World);
+//             // transform.Translate(Vector3.forward * Time.deltaTime * speed);
+//             // transform.position += transform.TransformDirection(Vector3.forward) * Time.deltaTime * speed;
+//         }
+//         if(Input.GetKey(KeyCode.S))
+//         {
+//             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.back), Time.deltaTime * 10f);
+//             transform.Translate(Vector3.back * Time.deltaTime * stat.MoveSpeed, Space.World);
+//             // transform.Translate(Vector3.back * Time.deltaTime * speed);
+//             // transform.position += transform.TransformDirection(Vector3.back) * Time.deltaTime * speed;
+//         }
+//         if(Input.GetKey(KeyCode.A))
+//         {
+//             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.left), Time.deltaTime * 10f);
+//             transform.Translate(Vector3.left * Time.deltaTime * stat.MoveSpeed, Space.World);
+//             // transform.Translate(Vector3.left * Time.deltaTime * speed);
+//             // transform.position += transform.TransformDirection(Vector3.left) * Time.deltaTime * speed;
+//         }
+//         if(Input.GetKey(KeyCode.D))
+//         {
+//             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.right), Time.deltaTime * 10f);
+//             transform.Translate(Vector3.right * Time.deltaTime * stat.MoveSpeed, Space.World);
+//             // transform.Translate(Vector3.right * Time.deltaTime * speed);
+//             // transform.position += transform.TransformDirection(Vector3.right) * Time.deltaTime * speed;
+//         }
+
+//         // state = PlayerState.Idle;
+//     }

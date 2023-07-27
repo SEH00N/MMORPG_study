@@ -8,12 +8,13 @@ namespace Data
     public class Stat
     {
         public int level;
-        public int hp;
+        public int maxHP;
         public int attack;
+        public int totalExp;
 
         public override string ToString()
         {
-            return $"level : {level}, hp : {hp}, attack : {attack}";
+            return $"level : {level}, maxHP : {maxHP}, attack : {attack}, totalExp : {totalExp}";
         }
     }
 

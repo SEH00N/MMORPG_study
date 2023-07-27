@@ -3,6 +3,21 @@ using UnityEngine;
 
 public class DEFINE
 {
+    public enum WorldObject
+    {
+        Unknown,
+        Player,
+        Monster
+    }
+
+    public enum State
+    {
+        Die,
+        Moving,
+        Idle,
+        Skill
+    }
+
     public enum Layer
     {
         Monster = 1 << 6,
