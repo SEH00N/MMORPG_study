@@ -7,11 +7,6 @@ public class UI_Inventory : UI_Scene
         GridPanel,
     }
 
-    private void Start()
-    {
-        Init();
-    }
-
     public override void Init()
     {
         base.Init();

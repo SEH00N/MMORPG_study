@@ -3413,6 +3413,7 @@ GameObject:
   - component: {fileID: -6991606537693840844}
   - component: {fileID: 265422591362919994}
   - component: {fileID: 4259060266352901195}
+  - component: {fileID: 361825197432266053}
   m_Layer: 0
   m_Name: UnityChan
   m_TagString: Untagged
@@ -3523,6 +3524,20 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!136 &361825197432266053
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265422591362919990}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.3
+  m_Height: 1.5183828
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.75725114, z: 0}
 --- !u!1 &265422591363505099
 GameObject:
   m_ObjectHideFlags: 0
