@@ -5,7 +5,8 @@ namespace ServerCore
     {
         static void Main(string[] args)
         {
-
+            DeadLock l = new DeadLock();
+            l.Main();
         }
     }
 }
