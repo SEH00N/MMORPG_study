@@ -2,11 +2,11 @@
 {
     public class MultiThreading
     {
-        // Task         =>  비동기 형태로 동작하는 멀티 스레딩 async와 await 생각하면 됨
+        //       Task   =>  비동기 형태로 동작하는 멀티 스레딩 async와 await 생각하면 됨
         //                  근데 내부적으론 ThreadPool로 구현되어있음
         //                  다만 옵션을 설정하여 병목현상을 예방할 수 있도록 구현되어 있음
 
-        // Thread       =>  CPU에 말 그대로 스레드를 추가하는 방식
+        //     Thread   =>  CPU에 말 그대로 스레드를 추가하는 방식
         //                  근본 방식
 
         // ThreadPool   =>  스레드에 동력을 공급해서 일을 시키는 놈이 코어라고 하는 놈인데
@@ -14,7 +14,7 @@
         //                  그래서 c#에서 스레드를 일정 개수만큼 미리 대기 시켜두고 필요할 때 풀링해서 쓰는 방식
         //                  들어 온 작업을 대기시켜둔 스레드들한테 작업을 할당해서 처리하는 방식이기 때문에
         //                  너무 오래 걸리는 작업(while loop 같은 것)을 ThreadPool로 처리하면 병목현상이 일어날 수 있음
-        //                  따라서 가벼운 작업을 할 때 ThreadPool을 사용하고 오래걸리는 작업을 할 땐 Thread를 사용하는 걸 권장함
+        //                  따라서 가벼운 작업을 할 때 ThreadPool을 사용하고 오래걸리는 작업을 할 땐 Thread 또는 Task를 사용하는 걸 권장함
 
         private void MainThread(object state)
         {
