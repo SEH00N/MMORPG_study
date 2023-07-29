@@ -5,8 +5,6 @@ namespace ServerCore
     {
         static void Main(string[] args)
         {
-            ReaderWriterLockTest locker = new ReaderWriterLockTest();
-            locker.Main();
         }
     }
 }
