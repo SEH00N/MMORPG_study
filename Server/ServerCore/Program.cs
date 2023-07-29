@@ -5,8 +5,8 @@ namespace ServerCore
     {
         static void Main(string[] args)
         {
-            SpinLockTest slt = new SpinLockTest();
-            slt.Main();
+            ReaderWriterLockTest locker = new ReaderWriterLockTest();
+            locker.Main();
         }
     }
 }
