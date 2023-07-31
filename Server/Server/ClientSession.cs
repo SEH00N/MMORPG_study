@@ -3,21 +3,57 @@ using System.Net;
 
 namespace Server
 {
-    public class Packet
+    public abstract class Packet
     {
         public ushort size;
         public ushort packetID;
+
+        public abstract ArraySegment<byte> Write();
+        public abstract void Read(ArraySegment<byte> s);
     }
 
     public class PlayerInfoReq : Packet
     {
         public long playerID;
-    }
 
-    public class PlayerInfoOK : Packet
-    {
-        public int hp;
-        public int attack;
+        public PlayerInfoReq()
+        {
+            this.packetID = (ushort)PacketID.PlayerInfoReq;
+        }
+
+        public override void Read(ArraySegment<byte> s)
+        {
+            ushort count = 0;
+
+            //ushort size = BitConverter.ToUInt16(s.Array, s.Offset);
+            count += 2;
+            //ushort id = BitConverter.ToUInt16(s.Array, s.Offset + count);
+
+            count += 2;
+            this.playerID = BitConverter.ToInt64(new ReadOnlySpan<byte>(s.Array, s.Offset + count, s.Count - count));
+            count += 8;
+        }
+
+        public override ArraySegment<byte> Write()
+        {
+            ArraySegment<byte> b = SendBufferHelper.Open(4096);
+
+            ushort count = 0;
+            bool success = true;
+
+            count += 2;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(b.Array, b.Offset + count, b.Count - count), this.packetID);
+            count += 2;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(b.Array, b.Offset + count, b.Count - count), this.playerID);
+            count += 8;
+
+            success &= BitConverter.TryWriteBytes(new Span<byte>(b.Array, b.Offset, b.Count), count);
+
+            if (success == false)
+                return null;
+
+            return SendBufferHelper.Close(count);
+        }
     }
 
     public enum PacketID
@@ -54,9 +90,10 @@ namespace Server
             switch((PacketID)id)
             {
                 case PacketID.PlayerInfoReq:
-                    long playerID = BitConverter.ToInt64(buffer.Array, buffer.Offset + count);
-                    count += 8;
-                    Console.WriteLine($"Player Info Req : {playerID}");
+                    PlayerInfoReq p = new PlayerInfoReq();
+                    p.Read(buffer);
+
+                    Console.WriteLine($"Player Info Req : {p.playerID}");
                     break;
             }
 
