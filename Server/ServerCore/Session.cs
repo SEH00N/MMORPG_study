@@ -13,6 +13,7 @@ namespace ServerCore
         public sealed override int OnReceive(ArraySegment<byte> buffer)
         {
             int processLength = 0;
+            int __packetCount = 0;
 
             while(true)
             {
@@ -27,10 +28,14 @@ namespace ServerCore
 
                 // 어떻게든 하나 이상의 패킷을 조립 가능
                 OnReceivePacket(new ArraySegment<byte>(buffer.Array, buffer.Offset, dataSize));
+                __packetCount++;
 
                 processLength += dataSize;
                 buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize);
             }
+
+            if(__packetCount > 1)
+                Console.WriteLine($"Packet Received : {__packetCount}");
 
             return processLength;
         }
@@ -43,7 +48,7 @@ namespace ServerCore
         private Socket socket;
         private int disconnected = 0;
 
-        private ReceiveBuffer receiveBuffer = new ReceiveBuffer(1024);
+        private ReceiveBuffer receiveBuffer = new ReceiveBuffer(65535);
 
         private Queue<ArraySegment<byte>> sendQueue = new Queue<ArraySegment<byte>>();
         private List<ArraySegment<byte>> pendingList = new List<ArraySegment<byte>>();
@@ -57,6 +62,15 @@ namespace ServerCore
         public abstract int  OnReceive(ArraySegment<byte> buffer);
         public abstract void OnSend(int numOfBytes);
 
+        private void Clear()
+        {
+            lock(locker)
+            {
+                sendQueue.Clear();
+                pendingList.Clear();
+            }
+        }
+
         public void Start(Socket socket)
         {
             this.socket = socket;
@@ -65,6 +79,21 @@ namespace ServerCore
             sendArgs.Completed += OnSendCompleted;
 
             RegisterReceive();
+        }
+
+        public void Send(List<ArraySegment<byte>> sendBufferList)
+        {
+            if (sendBufferList.Count == 0)
+                return;
+
+            lock (locker)
+            {
+                foreach(ArraySegment<byte> sendBuffer in sendBufferList)
+                    sendQueue.Enqueue(sendBuffer);
+
+                if (pendingList.Count == 0)
+                    RegisterSend();
+            }
         }
 
         public void Send(ArraySegment<byte> sendBuffer)
@@ -88,12 +117,17 @@ namespace ServerCore
             // 쫓아내기
             socket.Shutdown(SocketShutdown.Both);
             socket.Close();
+
+            Clear();
         }
 
         #region Network Communication
 
         private  void RegisterSend()
         {
+            if (disconnected == 1)
+                return;
+
             while (sendQueue.Count > 0)
             {
                 ArraySegment<byte> buffer = sendQueue.Dequeue();
@@ -102,9 +136,13 @@ namespace ServerCore
 
             sendArgs.BufferList = pendingList;
 
-            bool pending = socket.SendAsync(sendArgs);
-            if (pending == false)
-                OnSendCompleted(null, sendArgs);
+            try {
+                bool pending = socket.SendAsync(sendArgs);
+                if (pending == false)
+                    OnSendCompleted(null, sendArgs);
+            } catch (Exception e) {
+                Console.WriteLine($"RegisterSend Failed {e}");
+            }
         }
 
         private void OnSendCompleted(object sender, SocketAsyncEventArgs args)
@@ -137,13 +175,21 @@ namespace ServerCore
 
         private void RegisterReceive()
         {
+            if (disconnected == 1)
+                return;
+
             receiveBuffer.Clean();
             ArraySegment<byte> buffer = receiveBuffer.WriteSegment;
             receiveArgs.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
 
-            bool pending = socket.ReceiveAsync(receiveArgs);
-            if (pending == false)
-                OnReceiveCompleted(null, receiveArgs);
+            try {
+                bool pending = socket.ReceiveAsync(receiveArgs);
+                if (pending == false)
+                    OnReceiveCompleted(null, receiveArgs);
+            } catch (Exception e) {
+                Console.WriteLine($"RegisterReceive Failed {e}");
+            }
+
         }
 
         private void OnReceiveCompleted(object sender, SocketAsyncEventArgs args)

@@ -1,7 +1,6 @@
 ﻿using ServerCore;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace DummyClient
 {
@@ -16,7 +15,7 @@ namespace DummyClient
             IPEndPoint endPoint = new IPEndPoint(ipAddress, 8081);
 
             Connector connector = new Connector();
-            connector.Connect(endPoint, () => new ServerSession());
+            connector.Connect(endPoint, () => SessionManager.Instance.Generate(), 500);
 
             while(true)
             {
@@ -25,15 +24,15 @@ namespace DummyClient
 
                 try
                 {
+                    SessionManager.Instance.SendForEach();
                 }
                 catch(Exception e)
                 {
                     Console.WriteLine(e.ToString());
                 }
 
-                Thread.Sleep(100);
+                Thread.Sleep(250);
             }
-
         }
     }
 }

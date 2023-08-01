@@ -8,7 +8,7 @@ namespace ServerCore
         private Socket listenSocket;
         private Func<Session> sessionFactory;
         
-        public void Init(IPEndPoint endPoint, Func<Session> sessionFactory)
+        public void Init(IPEndPoint endPoint, Func<Session> sessionFactory, int register = 10, int backlog = 100)
         {
             // 문지기 핸드폰 생성
             listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -19,12 +19,15 @@ namespace ServerCore
 
             // 영업 시작
             // backlog : 최대 대기수
-            listenSocket.Listen(10);
+            listenSocket.Listen(backlog);
 
-            SocketAsyncEventArgs args = new SocketAsyncEventArgs();
-            //args.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted);
-            args.Completed += OnAcceptCompleted;
-            RegisterAccept(args);
+            for(int i = 0; i < register; i++)
+            {
+                SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+                //args.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted);
+                args.Completed += OnAcceptCompleted;
+                RegisterAccept(args);
+            }
         }
 
         private void RegisterAccept(SocketAsyncEventArgs args)
