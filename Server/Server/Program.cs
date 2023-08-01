@@ -9,6 +9,12 @@ namespace Server
         static Listener listener = new Listener();
         public static GameRoom Room = new GameRoom();
 
+        static void FlushRoom()
+        {
+            Room.Push(() => Room.Flush());
+            JobTimer.Instance.PusH(FlushRoom, 250);
+        }
+
         static void Main(string[] args)
         {
             // DNS (Domain Name System)
@@ -20,10 +26,12 @@ namespace Server
             listener.Init(endPoint, () => SessionManager.Instance.Generate());
             Console.WriteLine("Listening...");
 
+            //FlushRoom();
+            JobTimer.Instance.PusH(FlushRoom);
+
             while (true)
             {
-                Room.Push(() => Room.Flush());
-                Thread.Sleep(250);
+                JobTimer.Instance.Flush();
             }
         }
     }
