@@ -103,7 +103,6 @@ public class {0} : IPacket
     {{
         ushort count = 0;
 
-        ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(buffer.Array, buffer.Offset, buffer.Count);
         count += sizeof(ushort);
         count += sizeof(ushort);
 
@@ -115,21 +114,15 @@ public class {0} : IPacket
         ArraySegment<byte> buffer = SendBufferHelper.Open(4096);
 
         ushort count = 0;
-        bool success = true;
-
-        Span<byte> span = new Span<byte>(buffer.Array, buffer.Offset, buffer.Count);
 
         count += sizeof(ushort);
 
-        success &= BitConverter.TryWriteBytes(span.Slice(count, span.Length - count), (ushort)PacketID.{0});
+        Array.Copy(BitConverter.GetBytes((ushort)PacketID.{0}), 0, buffer.Array, buffer.Offset + count, sizeof(ushort));
         count += sizeof(ushort);
 
         {3}
 
-        success &= BitConverter.TryWriteBytes(span, count);
-
-        if (success == false)
-            return null;
+        Array.Copy(BitConverter.GetBytes(count), 0, buffer.Array, buffer.Offset, sizeof(ushort));
 
         return SendBufferHelper.Close(count);
     }}
@@ -149,12 +142,12 @@ public class {0} : IPacket
 {{
     {2}
 
-    public void Read(ReadOnlySpan<byte> span, ref ushort count)
+    public void Read(ArraySegment<byte> buffer, ref ushort count)
     {{
         {3}
     }} 
 
-    public bool Write(Span<byte> span, ref ushort count)
+    public bool Write(ArraySegment<byte> buffer, ref ushort count)
     {{
         bool success = true;
 
@@ -170,7 +163,7 @@ public List<{0}> {1}s = new List<{0}>();
         // {1} Format
         // {2} 자료형
         public static string ReadFormat =
-@"this.{0} = BitConverter.{1}(span.Slice(count, span.Length - count));
+@"this.{0} = BitConverter.{1}(buffer.Array, buffer.Offset + count);
 count += sizeof({2});";
         
         // {0} 변수명
@@ -181,17 +174,17 @@ count += sizeof({1});";
 
         // {0} 변수명
         public static string ReadStringFormat =
-@"ushort {0}Len = BitConverter.ToUInt16(span.Slice(count, span.Length - count));
+@"ushort {0}Len = BitConverter.ToUInt16(buffer.Array, buffer.Offset + count);
 count += sizeof(ushort);
 
-this.{0} = Encoding.Unicode.GetString(span.Slice(count, {0}Len));
+this.{0} = Encoding.Unicode.GetString(buffer.Array, buffer.Offset + count, {0}Len);
 count += {0}Len;";
 
         // {0} 리스트 이름 [대문자]
         // {1} 리스트 이름 [소문자]
         public static string ReadListFormat =
 @"this.{1}s.Clear();
-ushort {1}Len = BitConverter.ToUInt16(span.Slice(count, span.Length - count));
+ushort {1}Len = BitConverter.ToUInt16(buffer.Array, buffer.Offset + count);
 count += sizeof(ushort);
 
 for(int i = 0; i < {1}Len; i++)
@@ -204,7 +197,7 @@ for(int i = 0; i < {1}Len; i++)
         // {0} 변수명
         // {1} 자료형
         public static string WriteFormat =
-@"success &= BitConverter.TryWriteBytes(span.Slice(count, span.Length - count), this.{0});
+@"Array.Copy(BitConverter.GetBytes(this.{0}), 0, buffer.Array, buffer.Offset + count, sizeof({1}));
 count += sizeof({1});";
 
         // {0} 변수명
@@ -216,16 +209,16 @@ count += sizeof({1});";
         // {0} 변수명
         public static string WriteStringFormat =
 @"ushort {0}Len = (ushort)Encoding.Unicode.GetBytes(this.{0}, 0, this.{0}.Length, buffer.Array, buffer.Offset + count + sizeof(ushort));
-success &= BitConverter.TryWriteBytes(span.Slice(count, span.Length - count), {0}Len);
+Array.Copy(BitConverter.GetBytes({0}Len), 0, buffer.Array, buffer.Offset + count, sizeof(ushort));
 count += sizeof(ushort);
 count += {0}Len;";
 
         // {0} 리스트 이름 [대문자]
         // {1} 리스트 이름 [소문자]
         public static string WriteListFormat =
-@"success &= BitConverter.TryWriteBytes(span.Slice(count, span.Length - count), (ushort)this.{1}s.Count);
+@"Array.Copy(BitConverter.GetBytes((ushort)this.{1}s.Count), 0, buffer.Array, buffer.Offset + count, sizeof(ushort));
 count += sizeof(ushort);
 foreach({0} {1} in this.{1}s)
-    success &= {1}.Write(span, ref count);";
+    {1}.Write(buffer, ref count);";
     }
 }
