@@ -24,7 +24,7 @@ namespace DummyClient
 
         public override void OnReceivePacket(ArraySegment<byte> buffer)
         {
-            PacketManager.Instance.OnReceivePacket(this, buffer);
+            PacketManager.Instance.OnReceivePacket(this, buffer, (session, packet) => PacketQueue.Instance.Push(packet));
         }
 
         public override void OnSend(int numOfBytes)

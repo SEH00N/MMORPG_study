@@ -9,8 +9,16 @@ public class PacketHandler
         S_Chat chatPacket = packet as S_Chat;
         ServerSession serverSession = session as ServerSession;
 
-        if(chatPacket.playerID == 1)
+        // if(chatPacket.playerID == 1)
+        {
             Debug.Log(chatPacket.chat);
+
+            GameObject go = GameObject.Find("Player");
+            if(go == null)
+                Debug.Log("Player not found");
+            else     
+                Debug.Log("Player found");
+        }
             //Console.WriteLine($"[{DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second}.{DateTime.Now.Millisecond}] {chatPacket.chat}");
     }
 }

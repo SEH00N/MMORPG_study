@@ -13,7 +13,7 @@ public class PacketManager
     private static PacketManager instance = new PacketManager();
     public static PacketManager Instance => instance;
 
-    private Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>> onReceive = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>>();
+    private Dictionary<ushort, Func<PacketSession, ArraySegment<byte>, IPacket>> makeFunc = new Dictionary<ushort, Func<PacketSession, ArraySegment<byte>, IPacket>>();
     private Dictionary<ushort, Action<PacketSession, IPacket>> handlers = new Dictionary<ushort, Action<PacketSession, IPacket>>();
 
     private PacketManager()
@@ -26,7 +26,7 @@ public class PacketManager
 {0}
     }}
 
-    public void OnReceivePacket(PacketSession session, ArraySegment<byte> buffer)
+    public void OnReceivePacket(PacketSession session, ArraySegment<byte> buffer, Action<PacketSession, IPacket> onReceiveCallback = null)
     {{
         ushort count = 0;
 
@@ -36,16 +36,27 @@ public class PacketManager
         ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + count);
         count += 2;
 
-        Action<PacketSession, ArraySegment<byte>> action = null;
-        if (onReceive.TryGetValue(id, out action))
-            action?.Invoke(session, buffer);
+        Func<PacketSession, ArraySegment<byte>, IPacket> func = null;
+        if (makeFunc.TryGetValue(id, out func))
+        {{
+            IPacket packet = func?.Invoke(session, buffer);
+            if(onReceiveCallback != null)
+                onReceiveCallback ?.Invoke(session, packet);
+            else
+                HandlePacket(session, packet);
+        }}
     }}
 
-    private void MakePacket<T>(PacketSession session, ArraySegment<byte> buffer) where T : IPacket, new()
+    private T MakePacket<T>(PacketSession session, ArraySegment<byte> buffer) where T : IPacket, new()
     {{
         T packet = new T();
         packet.Read(buffer);
 
+        return packet;
+    }}
+
+    public void HandlePacket(PacketSession session, IPacket packet)
+    {{
         Action<PacketSession, IPacket> action = null;
         if (handlers.TryGetValue(packet.Protocol, out action))
             action?.Invoke(session, packet);
@@ -54,7 +65,7 @@ public class PacketManager
 
         // {0} 패킷 이름
         public static string ManagerRegisterFormat =
-@"        onReceive.Add((ushort)PacketID.{0}, MakePacket<{0}>);
+@"        makeFunc.Add((ushort)PacketID.{0}, MakePacket<{0}>);
         handlers.Add((ushort)PacketID.{0}, PacketHandler.{0}Handler);
 ";
 
