@@ -201,7 +201,7 @@ count += sizeof(ushort);
 for(int i = 0; i < {1}Len; i++)
 {{
     {0} {1} = new {0}();
-    {1}.Read(span, ref count);
+    {1}.Read(buffer, ref count);
     {1}s.Add({1});
 }}";
 

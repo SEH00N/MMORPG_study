@@ -17,8 +17,14 @@ public class PacketManager
             
     public void Register()
     {
-        makeFunc.Add((ushort)PacketID.S_Chat, MakePacket<S_Chat>);
-        handlers.Add((ushort)PacketID.S_Chat, PacketHandler.S_ChatHandler);
+        makeFunc.Add((ushort)PacketID.S_BroadcastEnterGame, MakePacket<S_BroadcastEnterGame>);
+        handlers.Add((ushort)PacketID.S_BroadcastEnterGame, PacketHandler.S_BroadcastEnterGameHandler);
+        makeFunc.Add((ushort)PacketID.S_BroadcastLeaveGame, MakePacket<S_BroadcastLeaveGame>);
+        handlers.Add((ushort)PacketID.S_BroadcastLeaveGame, PacketHandler.S_BroadcastLeaveGameHandler);
+        makeFunc.Add((ushort)PacketID.S_PlayerList, MakePacket<S_PlayerList>);
+        handlers.Add((ushort)PacketID.S_PlayerList, PacketHandler.S_PlayerListHandler);
+        makeFunc.Add((ushort)PacketID.S_BroadcastMove, MakePacket<S_BroadcastMove>);
+        handlers.Add((ushort)PacketID.S_BroadcastMove, PacketHandler.S_BroadcastMoveHandler);
 
     }
 

@@ -68,8 +68,8 @@ namespace PacketGenerator
             generatedPackets += string.Format(PacketFormats.PacketFormat, packetName, tuple.Item1, tuple.Item2, tuple.Item3);
             packetEnums += string.Format(PacketFormats.PacketEnumFormat, packetName, ++packetID);
 
-            // S_ => 클라가 서버로 보내는 패킷
-            // C_ => 서버가 클라로 보내는 패킷
+            // C_ => 클라가 서버로 보내는 패킷
+            // S_ => 서버가 클라로 보내는 패킷
             if(packetName.StartsWith("S_") || packetName.StartsWith("s_"))
                 clientRegister += string.Format(PacketFormats.ManagerRegisterFormat, packetName);
             else

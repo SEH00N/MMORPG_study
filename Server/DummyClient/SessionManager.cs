@@ -5,19 +5,22 @@
         private static SessionManager instance = new SessionManager();
         public static SessionManager Instance => instance;
 
-        private object locker = new object();
         private List<ServerSession> sessions = new List<ServerSession>();
+        private object locker = new object();
+        private Random random = new Random();
 
         public void SendForEach()
         {
             lock(locker)
             {
-                C_Chat chatPacket = new C_Chat();
-                chatPacket.chat = $"Hello, Server!";
-
                 foreach (ServerSession session in sessions)
                 {
-                    ArraySegment<byte> buffer = chatPacket.Write();
+                    C_Move movePacket = new C_Move();
+                    movePacket.posX = random.Next(-50, 50);
+                    movePacket.posY = 0;
+                    movePacket.posZ = random.Next(-50, 50);
+
+                    ArraySegment<byte> buffer = movePacket.Write();
 
                     session.Send(buffer);
                 }
